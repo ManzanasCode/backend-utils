@@ -1,0 +1,122 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "Image Merger API",
+    "version": "1.0.0",
+    "description": "API REST to merge multiple base64 images vertically into a single image using Sharp."
+  },
+  "paths": {
+    "/health": {
+      "get": {
+        "summary": "Health Check",
+        "description": "Returns the status of the service.",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "example": "ok"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/merge-images": {
+      "post": {
+        "summary": "Merge multiple images vertically",
+        "description": "Une múltiples imágenes codificadas en base64 de forma vertical en una sola imagen de salida. El proceso sigue los siguientes pasos: 1) Valida la estructura del body y limpia los prefijos URI de datos de imagen ('data:image/*;base64,') de cada string de entrada. 2) Lee los metadatos de cada imagen en paralelo para calcular el ancho máximo de todo el grupo. 3) Redimensiona proporcionalmente cada imagen para adaptarla al ancho máximo calculado. 4) Apila verticalmente las imágenes procesadas de arriba hacia abajo sobre un fondo de lienzo de color blanco sólido. 5) Exporta la composición resultante a formato JPEG con una compresión y calidad del 92% codificada nuevamente en base64.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["images"],
+                "properties": {
+                  "images": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "description": "Base64 encoded image string (with or without data:image/ prefix)"
+                    },
+                    "example": [
+                      "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGQAAABkCAYAAABw4pVUAAAABmJLR0QA/wD/AP+gvaeTAAAAI0lEQVR42u3BAQEAAACCIP+vbkhAAQAAAAAAAAAAAAAAAAAAeBg3qgAB895a2gAAAABJRU5ErkJggg==",
+                      "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAJYAAACWAQMAAAB6QhYmAAAABlBMVEUAAAAAAP8SDrP2AAAACXBIWXMAAA7EAAAOxAGVKw4bAAAAGklEQVRIie3BMQEAAADCoPVPbQwfoAAAAIC3AQ+gAAEq57WNAAAAAElFTkSuQmCC"
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Images successfully merged",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "string",
+                      "description": "Base64 encoded result image in JPEG format"
+                    },
+                    "width": {
+                      "type": "integer",
+                      "example": 150
+                    },
+                    "height": {
+                      "type": "integer",
+                      "example": 300
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation error or invalid image data",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string",
+                      "example": "\"images\" must be a non-empty array of base64 strings"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string",
+                      "example": "An unexpected error occurred during processing"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
